@@ -1,13 +1,28 @@
 <html>
     <head>
         <title>Todo App</title>
-        <link rel="stylesheet" type="text/css" href="style.css">
     </head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js"></script>
     <body>
-        <div class="outer">
-            <div class="inner">
-                   
-            </div>
+        <script src="app.js"></script>
+        <div>
+            Signup
+            <input type="text" name="username" placeholder="Username">
+            <input type="password" name="password" placeholder="Password">
+            <button onclick="signup()">Submit</button>
+        </div>
+        <div>
+            Signin
+            <input type="text" name="username" placeholder="Username">
+            <input type="password" name="password" placeholder="Password">
+            <button onclick="signin()">Submit</button>
+        </div>
+        <div>
+            User information:
+            <div id="information"></div>
+        </div>
+        <div>
+            <button onclick="logout()">Logout</button>
         </div>
     </body>
 </html>
