@@ -1,7 +1,8 @@
 const express = require('express')
 const jwt = require('jsonwebtoken')
 const app = express()
-const JWT_SECRET = "ramdomharkiratilovekiara";
+const JWT_SEC = "atharshsai"
+
 app.use(express.json())
 
 const users = []
@@ -23,7 +24,7 @@ app.post("/signin", (req, res) => {
     if (user) {
         const token = jwt.sign({
             username: user.username
-        }, JWT_SECRET);
+        }, JWT_SEC);
         user.token = token;
         res.send({
             token
@@ -36,16 +37,49 @@ app.post("/signin", (req, res) => {
     }
 });
 
-app.get('/me', (req, res) => {
+// app.get("/me", (req, res) => {
+//     const token = req.headers.token;
+//     const userDetails = jwt.verify(token, JWT_SEC);
+
+//     const username =  userDetails.username;
+//     const user = users.find(user => user.username === username);
+
+//     if (user) {
+//         res.send({
+//             username: user.username
+//         })
+//     } else {
+//         res.status(401).send({
+//             message: "Unauthorized"
+//         })
+//     }
+// })
+
+// using middleware function
+
+function auth(req, res, next) {
     const token = req.headers.token
-    const userinfodecoded = jwt.verify(token, JWT_SECRET)
-    const username = userinfodecoded.username
-    const user = users.find((user) => username == user.username)
-    if(user){
-        res.send({message: user.username})
+    if(token){
+        jwt.verify(token, JWT_SEC, (err, decoded) => {
+            if(err){
+                res.send({message: "Unauthorized"})
+            }else{
+                req.user = decoded
+                next()
+            }
+        })
     }else{
-        res.send({mesage: 'invalid token or auth'})
+        res.send({message: "Unauthorized"})
     }
+}
+
+app.get('/get', auth, (req, res) => {
+    const user = req.user
+    res.send({
+        username: user.username,
+    })
 })
+
+
 
 app.listen(3000)

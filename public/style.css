@@ -1,0 +1,10 @@
+
+.outer{
+    padding: 400px;
+    display: flex;
+    background-color: red;
+}
+.inner{
+    padding: 500px;
+    background-color: blue;
+}
