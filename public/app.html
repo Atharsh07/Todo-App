@@ -3,8 +3,18 @@
         <title>Todo App</title>
     </head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js"></script>
+    <script>
+        async function Signup() {
+            const username = document.getElementById("signup-username").value;
+            const password = document.getElementById("signup-password").value;
+            const response = await axios.post("http://localhost:3000/signup", {
+                username: username,
+                password: password
+            })
+            alert("Signed in succefully")
+        }
+    </script>
     <body>
-        <script src="app.js"></script>
         <div>
             Signup
             <input type="text" name="username" placeholder="Username">
