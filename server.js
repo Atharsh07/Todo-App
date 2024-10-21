@@ -1,87 +1,101 @@
-const express = require('express')
-// const jwt = require('jsonwebtoken')
-const app = express()
-// const JWT_SEC = "atharshsai"
+const express = require("express");
+const jwt = require("jsonwebtoken");
 
-// app.use(express.json())
+const JWT_SECRET = "kirat123123";
 
-// const users = []
+const app = express();
+app.use(express.json());
 
-// app.post('/signup', (req, res) => {
-//     const username = req.body.username
-//     const password = req.body.password
-//     users.push({
-//         username: username,
-//         password: password
-//     })
-//     res.send({message: "your signed in"})
-// })
+const users = [];
 
-// app.post("/signin", (req, res) => {
-//     const username = req.body.username;
-//     const password = req.body.password;
-//     const user = users.find(user => user.username === username && user.password === password);
-//     if (user) {
-//         const token = jwt.sign({
-//             username: user.username
-//         }, JWT_SEC);
-//         user.token = token;
-//         res.send({
-//             token
-//         })
-//         console.log(users);
-//     } else {
-//         res.status(403).send({
-//             message: "Invalid username or password"
-//         })
-//     }
-// });
+function logger(req, res, next) {
+    console.log(req.method + " request came");
+    next();
+}
 
-// // app.get("/me", (req, res) => {
-// //     const token = req.headers.token;
-// //     const userDetails = jwt.verify(token, JWT_SEC);
-
-// //     const username =  userDetails.username;
-// //     const user = users.find(user => user.username === username);
-
-// //     if (user) {
-// //         res.send({
-// //             username: user.username
-// //         })
-// //     } else {
-// //         res.status(401).send({
-// //             message: "Unauthorized"
-// //         })
-// //     }
-// // })
-
-// // using middleware function
-
-// function auth(req, res, next) {
-//     const token = req.headers.token
-//     if(token){
-//         jwt.verify(token, JWT_SEC, (err, decoded) => {
-//             if(err){
-//                 res.send({message: "Unauthorized"})
-//             }else{
-//                 req.user = decoded
-//                 next()
-//             }
-//         })
-//     }else{
-//         res.send({message: "Unauthorized"})
-//     }
-// }
-
-// app.get('/get', auth, (req, res) => {
-//     const user = req.user
-//     res.send({
-//         username: user.username,
-//     })
-// })
-
+// localhost:3000
 app.get("/", function(req, res) {
     res.sendFile(__dirname + "/public/app.html");
-});
+})
 
-app.listen(3000)
+app.post("/signup", logger, function(req, res) {
+    const username = req.body.username
+    const password = req.body.password
+    users.push({
+        username: username,
+        password: password
+    })
+
+    // we should check if a user with this username already exists
+
+    res.json({
+        message: "You are signed in"
+    })
+})
+
+app.post("/signin", logger, function(req, res) {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    let foundUser = null;
+
+    for (let i = 0; i < users.length; i++) {
+        if (users[i].username === username && users[i].password === password) {
+            foundUser = users[i]
+        }
+    }
+
+    if (!foundUser) {
+        res.json({
+            message: "Credentials incorrect"
+        })
+        return
+    } else {
+        const token = jwt.sign({
+            username: users[i].username
+        }, JWT_SECRET);
+        res.header("jwt", token);
+
+        res.header("random", "harkirat");
+
+        res.json({
+            token: token
+        })
+    }
+})
+
+function auth(req, res, next) {
+    const token = req.headers.token;
+    const decodedData = jwt.verify(token, JWT_SECRET);
+
+    if (decodedData.username) {
+        // req = {status, headers...., username, password, userFirstName, random; ":123123"}
+        req.username = decodedData.username
+        next()
+    } else {
+        res.json({
+            message: "You are not logged in"
+        })
+    }
+}
+
+app.get("/me", logger, auth, function(req, res) {
+    // req = {status, headers...., username, password, userFirstName, random; ":123123"}
+    const currentUser = req.username;
+    // const token = req.headers.token;
+    // const decodedData = jwt.verify(token, JWT_SECRET);
+    // const currentUser = decodedData.username
+
+    for (let i = 0; i < users.length; i++) {
+        if (users[i].username === currentUser) {
+            foundUser = users[i]
+        }
+    }
+
+    res.json({
+        username: foundUser.username,
+        password: foundUser.password
+    })
+})
+
+app.listen(3000);
