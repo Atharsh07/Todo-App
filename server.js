@@ -6,16 +6,16 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const JWT_SECERT = "aashu2004";
 mongoose.connect('mongodb+srv://atharsh0425:nNYMz0dBaxtCtCQI@cluster0.u66eo.mongodb.net/todo-app-database')
-
+const bcrypt = require('bcrypt');
 
 app.post('/sign-up', async function (req, res) {
     const email = req.body.email;
     const password = req.body.password;
     const name = req.body.name;
-
+    const hashedPassword =  await bcrypt.hash(password, 5)
     await userModel.create({
         email: email,
-        password: password,
+        password: hashedPassword,
         name: name
     })
 
@@ -27,10 +27,16 @@ app.post('/sign-in', async function (req, res) {
     const email = req.body.email;
     const password = req.body.password;
     const user = await userModel.findOne({
-        email: email,
-        password: password
+        email: email
     })
-    if(user){ const token = jwt.sign({
+    if(!user){
+        res.status(403).json({
+            message: "User does not exit in our db"
+        })
+        return
+    }
+    const passwordMatched = await bcrypt.compare(password, user.password)
+    if(passwordMatched){ const token = jwt.sign({
         id: user._id.toString(),
     }, JWT_SECERT)
     res.json ({message: token})
