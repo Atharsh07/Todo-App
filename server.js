@@ -7,21 +7,45 @@ const mongoose = require('mongoose');
 const JWT_SECERT = "aashu2004";
 mongoose.connect('mongodb+srv://atharsh0425:nNYMz0dBaxtCtCQI@cluster0.u66eo.mongodb.net/todo-app-database')
 const bcrypt = require('bcrypt');
+const {z} = require('zod');
 
 app.post('/sign-up', async function (req, res) {
+        //zod validation (input validation)
+        const requireBody = z.object({
+            email: z.string().min(3).max(100).email(),
+            password: z.string().min(5).max(30).regex(),
+            name: z.string().min(3).max(100)
+        })
+        const dataIsSuccess = requireBody.safeParse(req.body);
+        if(!dataIsSuccess.success){
+            res.json({
+                message: "incorrect format",
+                error: dataIsSuccess.error
+            })
+            return
+        }
     const email = req.body.email;
     const password = req.body.password;
     const name = req.body.name;
-    const hashedPassword =  await bcrypt.hash(password, 5)
-    await userModel.create({
-        email: email,
-        password: hashedPassword,
-        name: name
-    })
-
-    res.json({
-        message: "Yor are Signed up"
-    })
+    let erroThrowm = false;
+    try{
+        const hashedPassword =  await bcrypt.hash(password, 5)
+        await userModel.create({
+            email: email,
+            password: hashedPassword,
+            name: name
+        })
+    }catch(e){
+       res.json({
+        message: "User already exists"
+       })
+       erroThrowm = true;
+    }
+    if(!erroThrowm){
+        res.json({
+            message: "Yor are Signed up"
+        })
+    }
 });
 app.post('/sign-in', async function (req, res) {
     const email = req.body.email;
@@ -77,3 +101,4 @@ function auth(req, res, next) {
 
 app.listen(3000);
 // mongodb+srv://atharsh0425:<db_password>@cluster0.u66eo.mongodb.net/
+
